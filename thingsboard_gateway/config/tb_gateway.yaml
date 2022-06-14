@@ -16,6 +16,7 @@ thingsboard:
     inactivityCheckPeriodSeconds: 10
   security:
     accessToken: PUT_YOUR_GW_ACCESS_TOKEN_HERE
+    pwd: PUT_YOUR_GW_PWD_HERE
   qos: 1
 storage:
   type: memory
