@@ -1,6 +1,6 @@
 thingsboard:
-  host: thingsboard.cloud
-  port: 1883
+  host: 10.188.199.205
+  port: 32153
   remoteShell: false
   remoteConfiguration: false
   statistics:
@@ -15,8 +15,8 @@ thingsboard:
     inactivityTimeoutSeconds: 120
     inactivityCheckPeriodSeconds: 10
   security:
-    accessToken: PUT_YOUR_GW_ACCESS_TOKEN_HERE
-    pwd: PUT_YOUR_GW_PWD_HERE
+    accessToken: 7523371d-04ef-4567-9baf-046a8671ea39
+    pwd: 5inOAqzMXpbAyaje
   qos: 1
 storage:
   type: memory
@@ -41,15 +41,15 @@ grpc:
   minTimeBetweenPingsMs: 10000
   minPingIntervalWithoutDataMs: 5000
 connectors:
-  -
-    name: MQTT Broker Connector
-    type: mqtt
-    configuration: mqtt.json
-
 #  -
-#    name: Modbus Connector
-#    type: modbus
-#    configuration: modbus.json
+#    name: MQTT Broker Connector
+#    type: mqtt
+#    configuration: mqtt.json
+
+  -
+    name: Modbus Connector
+    type: modbus
+    configuration: modbus.json
 #
 #  -
 #    name: Modbus Connector

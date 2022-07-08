@@ -94,6 +94,7 @@ class TBGatewayService:
             DeviceActions.CONNECT: self.add_device,
             DeviceActions.DISCONNECT: self.del_device
         }
+
         self.__async_device_actions_queue = SimpleQueue()
         self.__process_async_actions_thread = Thread(target=self.__process_async_device_actions,
                                                      name="Async device actions processing thread", daemon=True)
@@ -270,7 +271,7 @@ class TBGatewayService:
                         'statsSendPeriodInSeconds'] * 1000 and self.tb_client.is_connected():
                     summary_messages = self.__form_statistics()
                     # with self.__lock:
-                    self.tb_client.client.send_telemetry(summary_messages)
+                    # self.tb_client.client.send_telemetry(summary_messages)
                     gateway_statistic_send = time() * 1000
                     # self.__check_shared_attributes()
 
@@ -631,7 +632,7 @@ class TBGatewayService:
                         if self.__check_devices_idle:
                             self.__connected_devices[data['deviceName']]['last_receiving_data'] = time()
 
-                        data = self.__convert_telemetry_to_ts(data)
+                        # data = self.__convert_telemetry_to_ts(data)
 
                         max_data_size = self.__config["thingsboard"].get("maxPayloadSizeBytes", 1024)
                         if self.__get_data_size(data) >= max_data_size:
@@ -695,14 +696,17 @@ class TBGatewayService:
         telemetry = {}
         telemetry_with_ts = []
         for item in data["telemetry"]:
-            if item.get("ts") is None:
+            if item.get("timestamp") is None:
                 telemetry = {**telemetry, **item}
             else:
-                telemetry_with_ts.append({"ts": item["ts"], "values": {**item["values"]}})
+                telemetry_with_ts.append({"timestamp": item["timestamp"], "values": item["values"]})
         if telemetry_with_ts:
             data["telemetry"] = telemetry_with_ts
         elif len(data['telemetry']) > 0:
-            data["telemetry"] = {"ts": int(time() * 1000), "values": telemetry}
+            # data["telemetry"] = {"ts": int(time() * 1000), "values": telemetry}
+            for items in data['telemetry']:
+                timestamp = {"timestamp": int(time() * 1000)}
+                data["telemetry"] = timestamp.update(items)
         return data
 
     def __send_data_pack_to_storage(self, data, connector_name):
@@ -718,7 +722,7 @@ class TBGatewayService:
                                                                                                 1024):
             self.__send_data(devices_data_in_event_pack)
             for device in devices_data_in_event_pack:
-                devices_data_in_event_pack[device]["telemetry"] = []
+                devices_data_in_event_pack[device]["telemetry"] = {}
                 devices_data_in_event_pack[device]["attributes"] = {}
 
     def __read_data_from_storage(self):
@@ -744,17 +748,17 @@ class TBGatewayService:
                                 continue
 
                             if not devices_data_in_event_pack.get(current_event["deviceName"]):
-                                devices_data_in_event_pack[current_event["deviceName"]] = {"telemetry": [],
+                                devices_data_in_event_pack[current_event["deviceName"]] = {"telemetry": {},
                                                                                            "attributes": {}}
                             if current_event.get("telemetry"):
                                 if isinstance(current_event["telemetry"], list):
                                     for item in current_event["telemetry"]:
                                         self.check_size(devices_data_in_event_pack)
-                                        devices_data_in_event_pack[current_event["deviceName"]]["telemetry"].append(
+                                        devices_data_in_event_pack[current_event["deviceName"]]["telemetry"].update(
                                             item)
                                 else:
                                     self.check_size(devices_data_in_event_pack)
-                                    devices_data_in_event_pack[current_event["deviceName"]]["telemetry"].append(
+                                    devices_data_in_event_pack[current_event["deviceName"]]["telemetry"].update(
                                         current_event["telemetry"])
                             if current_event.get("attributes"):
                                 if isinstance(current_event["attributes"], list):
@@ -834,13 +838,14 @@ class TBGatewayService:
                         self._published_events.put(self.tb_client.client.gw_send_telemetry(final_device_name,
                                                                                            devices_data_in_event_pack[
                                                                                                device]["telemetry"]))
-                devices_data_in_event_pack[device] = {"telemetry": [], "attributes": {}}
+                devices_data_in_event_pack[device] = {"telemetry": {}, "attributes": {}}
         except Exception as e:
             log.exception(e)
 
     def _rpc_request_handler(self, request_id, content):
+        print(content)
         try:
-            device = content.get("device")
+            device = content.get("deviceId")
             if device is not None:
                 connector_name = self.get_devices()[device].get("connector")
                 if connector_name is not None:

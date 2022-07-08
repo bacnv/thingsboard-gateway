@@ -26,7 +26,7 @@ class BackwardCompatibilityAdapter:
         self.__config_dir = config_dir
         BackwardCompatibilityAdapter.CONFIG_PATH = self.__config_dir
         self.__keys = ['host', 'port', 'type', 'method', 'timeout', 'byteOrder', 'wordOrder', 'retries', 'retryOnEmpty',
-                       'retryOnInvalid', 'baudrate']
+                       'retryOnInvalid', 'baudrate', 'deviceId']
 
     @staticmethod
     def __save_json_config_file(config):

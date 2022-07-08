@@ -23,8 +23,8 @@ from thingsboard_gateway.tb_utility.tb_utility import TBUtility
 GATEWAY_ATTRIBUTES_TOPIC = "v1/gateway/attributes"
 GATEWAY_ATTRIBUTES_REQUEST_TOPIC = "v1/gateway/attributes/request"
 GATEWAY_ATTRIBUTES_RESPONSE_TOPIC = "v1/gateway/attributes/response"
-GATEWAY_MAIN_TOPIC = "v1/gateway/"
-GATEWAY_RPC_TOPIC = "v1/gateway/rpc"
+GATEWAY_MAIN_TOPIC = "devices/v1"
+GATEWAY_RPC_TOPIC = "devices/v1/control/7523371d-04ef-4567-9baf-046a8671ea39"
 GATEWAY_RPC_RESPONSE_TOPIC = "v1/gateway/rpc/response"
 GATEWAY_CLAIMING_TOPIC = "v1/gateway/claim"
 
@@ -71,6 +71,7 @@ class TBGatewayMqttClient(TBDeviceMqttClient):
         return True if self._gw_subscriptions else False
 
     def _on_message(self, client, userdata, message):
+        print(message)
         content = TBUtility.decode(message)
         super()._on_decoded_message(content, message)
         self._on_decoded_message(content, message)
@@ -129,12 +130,15 @@ class TBGatewayMqttClient(TBDeviceMqttClient):
         return self.__request_attributes(device_name, keys, callback, True)
 
     def gw_send_attributes(self, device, attributes, quality_of_service=1):
-        return self.publish_data({device: attributes}, GATEWAY_MAIN_TOPIC + "attributes", quality_of_service)
+        print(attributes)
+        return self.publish_data(attributes, GATEWAY_MAIN_TOPIC + "/attributes", quality_of_service)
 
     def gw_send_telemetry(self, device, telemetry, quality_of_service=1):
-        if not isinstance(telemetry, list) and not (isinstance(telemetry, dict) and telemetry.get("ts") is not None):
-            telemetry = [telemetry]
-        return self.publish_data({device: telemetry}, GATEWAY_MAIN_TOPIC + "telemetry", quality_of_service, )
+        # print(telemetry)
+        # if not isinstance(telemetry, list) and not (isinstance(telemetry, dict) and telemetry.get("ts") is not None):
+        #     telemetry = [telemetry]
+        # print(telemetry)
+        return self.publish_data(telemetry, GATEWAY_MAIN_TOPIC + "/sensors", quality_of_service, )
 
     def gw_connect_device(self, device_name, device_type):
         info = self._client.publish(topic=GATEWAY_MAIN_TOPIC + "connect", payload=dumps({"device": device_name, "type": device_type}),

@@ -25,10 +25,10 @@ from thingsboard_gateway.tb_utility.tb_utility import TBUtility
 
 RPC_RESPONSE_TOPIC = 'v1/devices/me/rpc/response/'
 RPC_REQUEST_TOPIC = 'v1/devices/me/rpc/request/'
-ATTRIBUTES_TOPIC = 'v1/devices/me/attributes'
+ATTRIBUTES_TOPIC = 'devices/v1/attributes'
 ATTRIBUTES_TOPIC_REQUEST = 'v1/devices/me/attributes/request/'
 ATTRIBUTES_TOPIC_RESPONSE = 'v1/devices/me/attributes/response/'
-TELEMETRY_TOPIC = 'v1/devices/me/telemetry'
+TELEMETRY_TOPIC = 'devices/v1/sensors'
 CLAIMING_TOPIC = 'v1/devices/me/claim'
 log = logging.getLogger("tb_connection")
 
@@ -179,6 +179,7 @@ class TBDeviceMqttClient:
 
     def _on_message(self, client, userdata, message):
         content = TBUtility.decode(message)
+        print(content)
         self._on_decoded_message(content, message)
 
     def _on_decoded_message(self, content, message):
@@ -268,8 +269,8 @@ class TBDeviceMqttClient:
 
     def send_telemetry(self, telemetry, quality_of_service=None):
         quality_of_service = quality_of_service if quality_of_service is not None else self.quality_of_service
-        if not isinstance(telemetry, list) and not (isinstance(telemetry, dict) and telemetry.get("ts") is not None):
-            telemetry = [telemetry]
+        # if not isinstance(telemetry, list) and not (isinstance(telemetry, dict) and telemetry.get("ts") is not None):
+            # telemetry = [telemetry]
         return self.publish_data(telemetry, TELEMETRY_TOPIC, quality_of_service)
 
     def send_attributes(self, attributes, quality_of_service=None):
